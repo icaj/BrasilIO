@@ -2,6 +2,9 @@
 
 TRABALHO DO CURSO DE CIENCIA DE DADOS DA MATERIA ENGENHARIA DE DADADOS DA CESAR SCHOOL
 
+Aluno: IVO CAETANO DE ANDRADE JUNIOR
+Turma: Banco de dados - Noite
+
 Analise de Dados Brasil IO
 
 Ferramenta de extração de dados de gastos do Governo Federal da página Brasil IO ("https://brasil.io/api")
