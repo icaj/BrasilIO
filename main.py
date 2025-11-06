@@ -80,7 +80,7 @@ def extrai_todas_paginas() -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     # por definição de Tinoco, o total de paginas buscadas será de 1000
     # total_paginas: Optional[int] = None
-    total_paginas = 3
+    total_paginas = 1000
 
     while True:
         dados = busca_pagina(pagina)
