@@ -2,7 +2,7 @@ import os, json, time, math
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse, parse_qs
 
 import requests
 import pandas as pd
@@ -25,6 +25,9 @@ DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 # API padrão Brasil.IO atual
 # doc: https://blog.brasil.io/2020/10/10/como-acessar-os-dados-do-brasil-io/
 DATA_URL = f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
 
 # devolve um header de autenticação
 def header_autenticacao() -> Dict[str, str]:
@@ -115,31 +118,34 @@ def transforma_para_df(linhas: List[Dict[str, Any]]) -> pd.DataFrame:
         return pd.DataFrame()
     df = pd.json_normalize(linhas, max_level=1)
 
-    # Tenta padronizar datas comuns (se existirem)
+    # 1) Tentamos converter colunas candidatas a data para datetime (UTC), sem format fixo
+    #    para evitar warnings e NaT generalizado.
+    tem_coluna_data_valida = False
     for col in df.columns:
-        if any(k in col.lower() for k in ["data", "dt_", "dt-", "dt.", "date"]):
-            try:
-                # Tenta o formato ISO 8601 padrão (ex: 2024-11-05 ou 2024-11-05T00:00:00Z)
-                df[col] = pd.to_datetime(
-                                df[col],
-                                format="%Y-%m-%d",
-                                errors="coerce",   # converte inválidos em NaT
-                                utc=True
-                            )
-            except Exception:
-                # fallback mais genérico, mas sem warnings
-                df[col] = pd.to_datetime(df[col], errors="coerce", utc=True)
+        col_low = col.lower()
+        if any(k in col_low for k in ["data", "dt_", "dt-", "dt.", "date"]):
+            s = pd.to_datetime(df[col], errors="coerce", utc=True)
+            # Considera "coluna valida" se há pelo menos um valor nao-nulo pós conversao
+            if s.notna().any():
+                df[col] = s
+                tem_coluna_data_valida = True
 
-    # partição por ano/mês com base em uma coluna de data, se existir
-    date_cols = [c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])]
-    if date_cols:
-        base = date_cols[0]
-        df["ano"] = df[base].dt.year
-        df["mes"] = df[base].dt.month
-        df["dia"] = df[base].dt.strftime("%Y-%m")
+    # 2) Coluna de partiçao 'dia' (YYYY-MM)
+    if tem_coluna_data_valida:
+        # Escolhe a primeira coluna datetime válida
+        base_col = next(
+            (c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])),
+            None
+        )
+        if base_col is not None:
+            df["dia"] = df[base_col].dt.strftime("%Y-%m")
+            # Fallback para linhas com NaT
+            df["dia"] = df["dia"].fillna(now_utc().strftime("%Y-%m"))
+        else:
+            df["dia"] = now_utc().strftime("%Y-%m")
     else:
-        # sem coluna de data clara: particiona por run
-        df["dia"] = DATA_HORA[:7]  # YYYYMM
+        df["dia"] = now_utc().strftime("%Y-%m")
+
 
     return df
 
@@ -148,13 +154,16 @@ def grava_parquets(df: pd.DataFrame, dataset_name: str = f"{DATASET_SLUG}_{NOME_
     if df.empty:
         return []
     paths: List[Path] = []
-    for part in sorted(df["dia"].unique()):
+    # Garante que não haja NaN na chave de partição
+    for part in sorted(x for x in df["dia"].dropna().unique()):
         part_df = df[df["dia"] == part].copy()
+        if part_df.empty:
+            continue  # não escreve partições vazias
         out_dir = DIR_BRONZE / dataset_name / f"dia={part}"
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"{dataset_name}_{DATA_HORA}.parquet"
-        # não levar colunas auxiliares de particionamento
-        part_df.drop(columns=["dt"], inplace=True, errors="ignore")
+        # Se quiser remover a coluna 'dia' do arquivo físico, comente a linha abaixo
+        # part_df = part_df.drop(columns=["dia"], errors="ignore")
         part_df.to_parquet(out_path, index=False)
         paths.append(out_path)
     return paths
