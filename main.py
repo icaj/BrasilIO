@@ -26,6 +26,201 @@ DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 # doc: https://blog.brasil.io/2020/10/10/como-acessar-os-dados-do-brasil-io/
 DATA_URL = f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"
 
+def le_json_raw(nome_arquivo: str) -> Dict[str, Any]:
+    """
+    Lê um arquivo JSON da pasta raw
+    
+    Args:
+        nome_arquivo: Nome do arquivo JSON
+    
+    Returns:
+        Dict com os dados do JSON
+    """
+    caminho = DIR_RAW / nome_arquivo
+    
+    if not caminho.exists():
+        raise FileNotFoundError(f"Arquivo não encontrado: {caminho}")
+    
+    with open(caminho, 'r', encoding='utf-8') as f:
+        dados = json.load(f)
+    
+    return dados
+
+def transforma_json_para_df(dados: Dict[str, Any]) -> pd.DataFrame:
+    """
+    Transforma dados JSON em DataFrame
+    
+    Args:
+        dados: Dicionário com os dados JSON
+    
+    Returns:
+        DataFrame com os dados normalizados
+    """
+    # Extrai os itens (results ou data)
+    itens = dados.get("results")
+    if itens is None:
+        itens = dados.get("data", dados if isinstance(dados, list) else [])
+    
+    if not itens:
+        print("[AVISO] Não há dados para processar")
+        return pd.DataFrame()
+    
+    # Normaliza o JSON em DataFrame
+    df = pd.json_normalize(itens, max_level=1)
+    
+    # Converte a coluna data_pagamento para datetime
+    if 'data_pagamento' in df.columns:
+        df['data_pagamento'] = pd.to_datetime(df['data_pagamento'], errors='coerce')
+    
+    # Converte valor para float
+    if 'valor' in df.columns:
+        df['valor'] = pd.to_numeric(df['valor'], errors='coerce')
+    
+    # Garante que ano e mes existem e são inteiros
+    if 'ano' in df.columns:
+        df['ano'] = pd.to_numeric(df['ano'], errors='coerce').astype('Int64')
+    
+    if 'mes' in df.columns:
+        df['mes'] = pd.to_numeric(df['mes'], errors='coerce').astype('Int64')
+    
+    print(f"[INFO] DataFrame criado com {len(df)} registros")
+    return df
+
+
+def grava_parquet_particionado(df: pd.DataFrame, nome_dataset: str = "gastos-diretos") -> List[Path]:
+    """
+    Grava DataFrame em arquivos Parquet particionados por ano e mês
+    
+    Args:
+        df: DataFrame com os dados
+        nome_dataset: Nome base do dataset
+    
+    Returns:
+        Lista com os caminhos dos arquivos gerados
+    """
+    if df.empty:
+        print("[AVISO] DataFrame vazio, nada a gravar")
+        return []
+    
+    # Verifica se as colunas de partição existem
+    if 'ano' not in df.columns or 'mes' not in df.columns:
+        print("[ERRO] DataFrame não possui colunas 'ano' e 'mes' para particionamento")
+        return []
+    
+    paths: List[Path] = []
+    
+    # Remove registros com ano ou mês nulos
+    df_valido = df.dropna(subset=['ano', 'mes'])
+    
+    if len(df_valido) < len(df):
+        print(f"[AVISO] {len(df) - len(df_valido)} registros removidos por falta de ano/mês")
+    
+    # Agrupa por ano e mês
+    for (ano, mes), grupo_df in df_valido.groupby(['ano', 'mes']):
+        # Formata mes com dois dígitos
+        mes_fmt = f"{int(mes):02d}"
+        
+        # Cria o diretório da partição
+        partition_dir = DIR_BRONZE / nome_dataset / f"ano={int(ano)}" / f"mes={mes_fmt}"
+        partition_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Nome do arquivo
+        arquivo = partition_dir / f"{nome_dataset}_ano{int(ano)}_mes{mes_fmt}.parquet"
+        
+        # Remove as colunas de partição do DataFrame (opcional)
+        # grupo_df = grupo_df.drop(columns=['ano', 'mes'], errors='ignore')
+        
+        # Grava o parquet
+        grupo_df.to_parquet(arquivo, index=False, engine='pyarrow')
+        
+        print(f"[INFO] Gravado: {arquivo} ({len(grupo_df)} registros)")
+        paths.append(arquivo)
+    
+    return paths
+
+
+def processar_json_para_parquet(nome_arquivo: str, nome_dataset: str = "gastos-diretos") -> List[Path]:
+    """
+    Função principal que processa um arquivo JSON e gera os Parquets particionados
+    
+    Args:
+        nome_arquivo: Nome do arquivo JSON na pasta raw
+        nome_dataset: Nome do dataset
+    
+    Returns:
+        Lista com os caminhos dos arquivos gerados
+    """
+    print(f"[INFO] Processando arquivo: {nome_arquivo}")
+    
+    # 1. Lê o JSON
+    dados = le_json_raw(nome_arquivo)
+    print(f"[INFO] Total de registros no JSON: {dados.get('count', 'N/A')}")
+    
+    # 2. Transforma em DataFrame
+    df = transforma_json_para_df(dados)
+    
+    if df.empty:
+        print("[INFO] Nenhum dado para processar")
+        return []
+    
+    # 3. Grava os Parquets particionados
+    arquivos = grava_parquet_particionado(df, nome_dataset)
+    
+    print(f"\n[SUCESSO] {len(arquivos)} arquivo(s) Parquet gerado(s)")
+    return arquivos
+
+
+####---------------------------------------------------------------#####
+
+# importa uma pagina da pasta RAW e devolve como dataframe
+def le_json_raw(pagina: int) -> pd.DataFrame:
+
+    try:
+        nome_arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_p{pagina:05d}.json"
+        caminho = DIR_RAW / nome_arquivo
+        if not caminho.exists():
+            print(f"[ERRO] Arquivo não encontrado: {caminho}")
+            return pd.DataFrame()
+        
+        # Lê o arquivo JSON
+        with open(caminho, 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        
+        # Extrai os itens (results ou data)
+        itens = dados.get("results")
+        if itens is None:
+            itens = dados.get("data", dados if isinstance(dados, list) else [])
+        
+        # Verifica se há dados
+        if not itens:
+            print(f"[AVISO] Arquivo {nome_arquivo} não contém dados")
+            return pd.DataFrame()
+        
+        # Converte para DataFrame usando a mesma lógica do script
+        df = pd.json_normalize(itens, max_level=1)
+        
+        print(f"[INFO] Arquivo {nome_arquivo} lido com sucesso: {len(df)} registros")
+        return df
+        
+    except json.JSONDecodeError as e:
+        print(f"[ERRO] Erro ao decodificar JSON: {e}")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"[ERRO] Erro ao ler arquivo: {e}")
+        return pd.DataFrame()
+    
+# verifica se página já existe na pasta RAW
+def existe_pagina_raw(pagina: int) -> bool:
+
+    try:
+        arquivos = os.listdir(DIR_RAW)
+        for arquivo in arquivos:
+            if arquivo.endswith(f"_p{pagina:05d}.json"):
+                return True
+        return False
+    except Exception:
+        return False
+
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -45,7 +240,7 @@ def espera_delay(tentativa: int):
 
 # grava na pasta raw o json recebido
 def grava_json(pagina: int, dados: Dict[str, Any]) -> Path:
-    arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_{DATA_HORA}_p{pagina:05d}.json"
+    arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_p{pagina:05d}.json"
     p = DIR_RAW / arquivo
     p.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
     return p
@@ -73,7 +268,7 @@ def busca_pagina(pagina: int) -> Dict[str, Any]:
             espera_delay(tentativas); tentativas += 1
 
 # faz o download de todas as páginas especificadas na variável 'total_paginas'
-def extrai_todas_paginas() -> List[Dict[str, Any]]:
+def download_paginas() -> int:
     # Varre todas as páginas até esvaziar.
     pagina = 1
     # lista com conteúdo de cada pagina
@@ -83,21 +278,26 @@ def extrai_todas_paginas() -> List[Dict[str, Any]]:
     total_paginas = 1000
 
     while True:
-        dados = busca_pagina(pagina)
+        # verifica se a pagina ja foi baixada
+        if existe_pagina_raw(pagina):
+            print(f"Página {pagina} já existe na pasta RAW")
+        else:
+            # faz o download da página
+            dados = busca_pagina(pagina)
 
-        # Estrutura típica do Brasil.IO (DRF): count/next/previous/results
-        itens = dados.get("results")
-        if itens is None:
-            # fallback para chaves alternativas
-            itens = dados.get("data", dados if isinstance(dados, list) else [])
+            # Estrutura típica do Brasil.IO (DRF): count/next/previous/results
+            itens = dados.get("results")
+            if itens is None:
+                # fallback para chaves alternativas
+                itens = dados.get("data", dados if isinstance(dados, list) else [])
 
-        print(f"[INFO] Salvando página {pagina} na pasta raw")
-        grava_json(pagina, dados)
+            print(f"[INFO] Salvando página {pagina} na pasta raw")
+            grava_json(pagina, dados)
 
-        if not itens:
-            break
+            if not itens:
+                break
 
-        out.extend(itens)
+            out.extend(itens)
 
         # calcula páginas quando possível
         #if total_paginas is None:
@@ -110,7 +310,7 @@ def extrai_todas_paginas() -> List[Dict[str, Any]]:
             break
 
     # retorna lista com conteúdo de cada página
-    return out
+    return pagina
 
 # transforma uma list em um parquet
 def transforma_para_df(linhas: List[Dict[str, Any]]) -> pd.DataFrame:
@@ -146,7 +346,6 @@ def transforma_para_df(linhas: List[Dict[str, Any]]) -> pd.DataFrame:
     else:
         df["dia"] = now_utc().strftime("%Y-%m")
 
-
     return df
 
 # salva o parquet na pasta bronze
@@ -168,21 +367,33 @@ def grava_parquets(df: pd.DataFrame, dataset_name: str = f"{DATASET_SLUG}_{NOME_
         paths.append(out_path)
     return paths
 
+def transformar_raw_para_bronze() -> int:
+    try:
+        arquivos = os.listdir(DIR_RAW)
+        for arquivo in arquivos:
+            arqs = processar_json_para_parquet(arquivo)
+        return len(arqs)
+    except Exception:
+        return 0
+    
 # inicio do programa
 def main():
     print(f"[INFO] Coletando de {DATA_URL}")
-    linhas = extrai_todas_paginas()
-    print(f"[INFO] Registros obtidos na execução: {len(linhas)}")
 
-    if not linhas:
-        print("[INFO] Nada a transformar.")
-        return
+    # faz download de todas as paginas
+    paginas = download_paginas()
+    
+    print(f"[INFO] Paginas lidas na execução: {paginas}")
 
-    df = transforma_para_df(linhas)
-    arquivos = grava_parquets(df)
-    print("[INFO] Arquivos gravados na pasta bronze:")
-    for a in arquivos:
-        print(" -", a)
+    total_arquivos = transformar_raw_para_bronze()
+
+    print(f"[INFO] {total_arquivos} arquivos processados")
+
+#    df = transforma_para_df(linhas)
+#    arquivos = grava_parquets(df)
+#    print("[INFO] Arquivos gravados na pasta bronze:")
+#    for a in arquivos:
+#        print(" -", a)
 
 if __name__ == "__main__":
     main()
