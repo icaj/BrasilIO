@@ -6,6 +6,7 @@ from urllib.parse import urlencode, urlparse, parse_qs
 
 import requests
 import pandas as pd
+import pyarrow as pa
 
 # ---------------------------
 # Constantes de Configuração
@@ -173,7 +174,7 @@ def processar_json_para_parquet(nome_arquivo: str, nome_dataset: str = "gastos-d
 ####---------------------------------------------------------------#####
 
 # importa uma pagina da pasta RAW e devolve como dataframe
-def le_json_raw(pagina: int) -> pd.DataFrame:
+'''def le_json_raw(pagina: int) -> pd.DataFrame:
 
     try:
         nome_arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_p{pagina:05d}.json"
@@ -208,6 +209,7 @@ def le_json_raw(pagina: int) -> pd.DataFrame:
     except Exception as e:
         print(f"[ERRO] Erro ao ler arquivo: {e}")
         return pd.DataFrame()
+'''
     
 # verifica se página já existe na pasta RAW
 def existe_pagina_raw(pagina: int) -> bool:
@@ -298,6 +300,7 @@ def download_paginas() -> int:
                 break
 
             out.extend(itens)
+            espera_delay(1)
 
         # calcula páginas quando possível
         #if total_paginas is None:
@@ -308,6 +311,7 @@ def download_paginas() -> int:
         pagina += 1
         if total_paginas is not None and pagina > total_paginas:
             break
+        
 
     # retorna lista com conteúdo de cada página
     return pagina
@@ -387,7 +391,7 @@ def main():
 
     total_arquivos = transformar_raw_para_bronze()
 
-    print(f"[INFO] {total_arquivos} arquivos processados")
+#    print(f"[INFO] {total_arquivos} arquivos processados")
 
 #    df = transforma_para_df(linhas)
 #    arquivos = grava_parquets(df)
