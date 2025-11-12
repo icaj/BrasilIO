@@ -27,6 +27,8 @@ pyarrow.dataset
 
 python-dotenv
 
+streamlit
+
 ### Descrição
 
 Este script em Phyton é um exercício de Engenharia de Dados que utiliza o site Brasil.io (https://brasil.io/) para explorar o dataset gastos-diretos, banco com informações sobre gastos do Governo Federal.

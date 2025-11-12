@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.dataset as ds
 import pyarrow as pa
+from streamlit import streamlit
 
 # Configurações
 BASE_DIR = Path("./dataset")
