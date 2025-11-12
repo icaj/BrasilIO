@@ -99,5 +99,5 @@ def processar_silver_para_gold(dataset_name: str = "gastos-diretos"):
     analise_gold(df)
 
 
-if __name__ == "__main__":
-    processar_silver_para_gold()
+#if __name__ == "__main__":
+#    processar_silver_para_gold()

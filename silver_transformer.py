@@ -108,5 +108,5 @@ def processar_bronze_para_silver(dataset_name: str = "gastos-diretos") -> None:
     print("[SUCESSO] Dados salvos na camada Silver com sucesso.")
 
 
-if __name__ == "__main__":
-    processar_bronze_para_silver()
+#if __name__ == "__main__":
+#    processar_bronze_para_silver()
