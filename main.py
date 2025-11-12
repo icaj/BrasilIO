@@ -367,11 +367,12 @@ def main():
     
     print(f"[INFO] Paginas lidas na execução: {paginas}")
 
-#   total_arquivos = transformar_raw_para_bronze()
+    total_arquivos = transformar_raw_para_bronze()
 
-#   print(f"[INFO] {total_arquivos} arquivos processados")
+    print(f"[INFO] {total_arquivos} arquivos processados")
     
-#    processar_bronze_para_silver()
+    processar_bronze_para_silver()
+    
     processar_silver_para_gold()
     
 if __name__ == "__main__":
