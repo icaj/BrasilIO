@@ -8,6 +8,7 @@ import requests
 import pandas as pd
 import pyarrow as pa
 from dotenv import load_dotenv
+from streamlit import streamlit
 
 from silver_transformer import processar_bronze_para_silver
 from gold_transformer import processar_silver_para_gold

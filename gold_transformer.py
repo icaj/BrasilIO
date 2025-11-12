@@ -10,7 +10,6 @@ BASE_DIR = Path("./dataset")
 DIR_SILVER = BASE_DIR / "silver"
 DIR_GOLD = BASE_DIR / "gold"
 
-
 def criar_agregacoes(df: pd.DataFrame) -> dict:
     """
     Cria tabelas agregadas a partir dos dados da camada Silver.
