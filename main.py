@@ -30,7 +30,6 @@ if not API_TOKEN:
 API_BASE_URL   = "https://brasil.io/api"
 DATASET_SLUG   = "gastos-diretos"
 NOME_TABELA    = "gastos"
-#API_TOKEN      = "76a8419d5dfdb77c13abe53d03d7382178a03cb2"
 TAMANHO_PAGINA = 1000 # a api define o tamanho máximo de cada página é de 10000 bytes, mas por uma questão de velocidde defini em 1000
 TIMEOUT        = 30
 DIR_SAIDA      = Path("./dataset")
