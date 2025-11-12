@@ -14,3 +14,11 @@ Utiiza python e bibliotecas para engenharia de dados.
 Extrai informações da base de dados 'gastos-diretos' armazenando em arquivos json na pasta dataset/raw.
 
 Após download, transforma os arquivos json para parquet e os armazena na pasta dataset/bronze
+
+### Bibliotecas usadas:
+
+requests
+pandas
+pyarrow
+pyarrow.dataset
+python-dotenv

@@ -7,17 +7,30 @@ from urllib.parse import urlencode, urlparse, parse_qs
 import requests
 import pandas as pd
 import pyarrow as pa
+from dotenv import load_dotenv
 
 from silver_transformer import processar_bronze_para_silver
 from gold_transformer import processar_silver_para_gold
 
+# ------------------------------------------------------
+# Carrega variáveis de ambiente do arquivo .env
+# usado para ocultar o token do código
+# ------------------------------------------------------
+load_dotenv()
+API_TOKEN      = os.getenv("BRASIL_IO_API_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError(
+        "Variável de ambiente 'BRASIL_IO_API_TOKEN' não definida. "
+        "Crie um arquivo .env ou defina-a no ambiente."
+    )
+  
 # ---------------------------
 # Constantes de Configuração
 # ---------------------------
 API_BASE_URL   = "https://brasil.io/api"
 DATASET_SLUG   = "gastos-diretos"
 NOME_TABELA    = "gastos"
-API_TOKEN      = "76a8419d5dfdb77c13abe53d03d7382178a03cb2"
+#API_TOKEN      = "76a8419d5dfdb77c13abe53d03d7382178a03cb2"
 TAMANHO_PAGINA = 1000 # a api define o tamanho máximo de cada página é de 10000 bytes, mas por uma questão de velocidde defini em 1000
 TIMEOUT        = 30
 DIR_SAIDA      = Path("./dataset")
@@ -28,7 +41,7 @@ DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 # API padrão Brasil.IO atual
 # doc: https://blog.brasil.io/2020/10/10/como-acessar-os-dados-do-brasil-io/
-DATA_URL = f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"
+DATA_URL       = f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"
 
 def le_json_raw(nome_arquivo: str) -> Dict[str, Any]:
     """
