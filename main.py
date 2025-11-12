@@ -8,6 +8,9 @@ import requests
 import pandas as pd
 import pyarrow as pa
 
+from silver_transformer import processar_bronze_para_silver
+from gold_transformer import processar_silver_para_gold
+
 # ---------------------------
 # Constantes de Configuração
 # ---------------------------
@@ -172,44 +175,6 @@ def processar_json_para_parquet(nome_arquivo: str, nome_dataset: str = "gastos-d
 
 
 ####---------------------------------------------------------------#####
-
-# importa uma pagina da pasta RAW e devolve como dataframe
-'''def le_json_raw(pagina: int) -> pd.DataFrame:
-
-    try:
-        nome_arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_p{pagina:05d}.json"
-        caminho = DIR_RAW / nome_arquivo
-        if not caminho.exists():
-            print(f"[ERRO] Arquivo não encontrado: {caminho}")
-            return pd.DataFrame()
-        
-        # Lê o arquivo JSON
-        with open(caminho, 'r', encoding='utf-8') as f:
-            dados = json.load(f)
-        
-        # Extrai os itens (results ou data)
-        itens = dados.get("results")
-        if itens is None:
-            itens = dados.get("data", dados if isinstance(dados, list) else [])
-        
-        # Verifica se há dados
-        if not itens:
-            print(f"[AVISO] Arquivo {nome_arquivo} não contém dados")
-            return pd.DataFrame()
-        
-        # Converte para DataFrame usando a mesma lógica do script
-        df = pd.json_normalize(itens, max_level=1)
-        
-        print(f"[INFO] Arquivo {nome_arquivo} lido com sucesso: {len(df)} registros")
-        return df
-        
-    except json.JSONDecodeError as e:
-        print(f"[ERRO] Erro ao decodificar JSON: {e}")
-        return pd.DataFrame()
-    except Exception as e:
-        print(f"[ERRO] Erro ao ler arquivo: {e}")
-        return pd.DataFrame()
-'''
     
 # verifica se página já existe na pasta RAW
 def existe_pagina_raw(pagina: int) -> bool:
@@ -389,15 +354,12 @@ def main():
     
     print(f"[INFO] Paginas lidas na execução: {paginas}")
 
-    total_arquivos = transformar_raw_para_bronze()
+#   total_arquivos = transformar_raw_para_bronze()
 
-#    print(f"[INFO] {total_arquivos} arquivos processados")
-
-#    df = transforma_para_df(linhas)
-#    arquivos = grava_parquets(df)
-#    print("[INFO] Arquivos gravados na pasta bronze:")
-#    for a in arquivos:
-#        print(" -", a)
-
+#   print(f"[INFO] {total_arquivos} arquivos processados")
+    
+#    processar_bronze_para_silver()
+    processar_silver_para_gold()
+    
 if __name__ == "__main__":
     main()
