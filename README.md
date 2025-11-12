@@ -18,7 +18,12 @@ Após download, transforma os arquivos json para parquet e os armazena na pasta 
 ### Bibliotecas usadas:
 
 requests
+
 pandas
+
 pyarrow
+
 pyarrow.dataset
+
 python-dotenv
+
