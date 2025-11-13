@@ -2,7 +2,7 @@
 
 Trabalho do Curso de Ciência de Dados da Matéria Engenharia de Dados da CESAR SCHOOL
 
-Aluno: IVO CAETANO DE ANDRADE JUNIOR
+Aluno: <b>IVO CAETANO DE ANDRADE JUNIOR</b>
 Turma: Banco de dados - Noite
 
 Analise de Dados Brasil IO
