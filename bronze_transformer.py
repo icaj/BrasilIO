@@ -1,12 +1,9 @@
-import os, json, time, math
+import os, json
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
-from urllib.parse import urlencode, urlparse, parse_qs
+from typing import Dict, Any, List
 
-import requests
 import pandas as pd
-import pyarrow as pa
 
 DIR_SAIDA      = Path("./dataset")
 DIR_RAW        = DIR_SAIDA / "raw"

@@ -1,14 +1,13 @@
-import os, json, time, math
+import os, time
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
-from urllib.parse import urlencode, urlparse, parse_qs
+from typing import Dict, Any, List
+from urllib.parse import urlencode
 
 import requests
-import pandas as pd
-import pyarrow as pa
 from dotenv import load_dotenv
 
+from raw_loader import existe_pagina_raw, grava_json
 from bronze_transformer import transformar_raw_para_bronze
 from silver_transformer import processar_bronze_para_silver
 from gold_transformer import processar_silver_para_gold
@@ -59,25 +58,6 @@ def header_autenticacao() -> Dict[str, str]:
         h["Authentication"] = f"Token {API_TOKEN}"
         h["Authorization"]  = f"Token {API_TOKEN}"
     return h
-
-# verifica se página já existe na pasta RAW
-def existe_pagina_raw(pagina: int) -> bool:
-
-    try:
-        arquivos = os.listdir(DIR_RAW)
-        for arquivo in arquivos:
-            if arquivo.endswith(f"_p{pagina:05d}.json"):
-                return True
-        return False
-    except Exception:
-        return False
-
-# grava na pasta raw o json recebido
-def grava_json(pagina: int, dados: Dict[str, Any]) -> Path:
-    arquivo = f"{DATASET_SLUG}_{NOME_TABELA}_p{pagina:05d}.json"
-    p = DIR_RAW / arquivo
-    p.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
-    return p
 
 # faz download de uma página especificada
 def busca_pagina(pagina: int) -> Dict[str, Any]:
