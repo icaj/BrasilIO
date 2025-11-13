@@ -1,6 +1,6 @@
 # BrasilIO
 
-TRABALHO DO CURSO DE CIENCIA DE DADOS DA MATERIA ENGENHARIA DE DADADOS DA CESAR SCHOOL
+Trabalho do Curso de Ciência de Dados da Matéria Engenharia de Dados da CESAR SCHOOL
 
 Aluno: IVO CAETANO DE ANDRADE JUNIOR
 Turma: Banco de dados - Noite
