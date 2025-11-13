@@ -90,33 +90,33 @@ def testes_qualidade(df: pd.DataFrame) -> None:
     print("\n[INFO] Executando testes de qualidade...")
     
     # Testa todas as colunas
-    print("\n📊 Relatório de Valores Nulos por Coluna:")
+    print("\n Relatório de Valores Nulos por Coluna:")
     print("-" * 60)
     for col in df.columns:
         nulos = df[col].isna().sum()
         percentual = (nulos / len(df)) * 100
         if nulos > 0:
-            print(f"⚠️  {col}: {nulos} nulos ({percentual:.2f}%)")
+            print(f"  {col}: {nulos} nulos ({percentual:.2f}%)")
         else:
-            print(f"✅ {col}: sem valores nulos")
+            print(f" {col}: sem valores nulos")
     
     # Colunas críticas (se existirem)
     colunas_criticas = ["ano", "mes", "valor", "data_pagamento"]
-    print("\n🔍 Análise de Colunas Críticas:")
+    print("\n Análise de Colunas Críticas:")
     print("-" * 60)
     for col in colunas_criticas:
         if col in df.columns:
             nulos = df[col].isna().sum()
             if nulos > 0:
-                print(f"❌ CRÍTICO: '{col}' possui {nulos} valores nulos")
+                print(f" CRÍTICO: '{col}' possui {nulos} valores nulos")
             else:
-                print(f"✅ '{col}' OK")
+                print(f" '{col}' OK")
         else:
-            print(f"⚠️  Coluna crítica não encontrada: '{col}'")
+            print(f"  Coluna crítica não encontrada: '{col}'")
     
     # Estatísticas gerais
-    print(f"\n📈 Total de registros: {len(df)}")
-    print(f"📋 Total de colunas: {len(df.columns)}")
+    print(f"\n Total de registros: {len(df)}")
+    print(f" Total de colunas: {len(df.columns)}")
     print("[INFO] Testes de qualidade concluídos.")
 
 
@@ -126,26 +126,26 @@ def analise_exploratoria(df: pd.DataFrame) -> None:
     print("[ANÁLISE EXPLORATÓRIA]")
     print("="*60)
     
-    print("\n📊 Resumo estatístico de colunas numéricas:")
+    print("\nResumo estatístico de colunas numéricas:")
     print(df.describe(include="number"))
     
     if "valor" in df.columns:
         total = df["valor"].sum()
         media = df["valor"].mean()
         mediana = df["valor"].median()
-        print(f"\n💰 Análise de Valores:")
+        print(f"\nAnálise de Valores:")
         print(f"   • Total gasto: R$ {total:,.2f}")
         print(f"   • Média por registro: R$ {media:,.2f}")
         print(f"   • Mediana: R$ {mediana:,.2f}")
     
     if "ano" in df.columns and "valor" in df.columns:
-        print("\n📅 Gastos por ano:")
+        print("\nGastos por ano:")
         gastos_ano = df.groupby("ano")["valor"].agg(['sum', 'count', 'mean'])
         gastos_ano.columns = ['Total', 'Qtd Registros', 'Média']
         print(gastos_ano)
     
     if "mes" in df.columns and "valor" in df.columns:
-        print("\n📆 Gastos por mês:")
+        print("\nGastos por mês:")
         gastos_mes = df.groupby("mes")["valor"].agg(['sum', 'count'])
         gastos_mes.columns = ['Total', 'Qtd Registros']
         print(gastos_mes)
@@ -157,23 +157,23 @@ def processar_bronze_para_silver(dataset_name: str = "gastos-diretos") -> None:
     silver_path = DIR_SILVER / dataset_name
     
     print("="*60)
-    print("🚀 INICIANDO PIPELINE BRONZE → SILVER")
+    print("INICIANDO PIPELINE BRONZE → SILVER")
     print("="*60)
     
     if not bronze_path.exists():
-        print(f"❌ [ERRO] Pasta bronze não encontrada: {bronze_path}")
+        print(f"[ERRO] Pasta bronze não encontrada: {bronze_path}")
         return
     
-    print(f"\n📂 Lendo dados da camada Bronze...")
+    print(f"\nLendo dados da camada Bronze...")
     print(f"   Origem: {bronze_path}")
     
     try:
         dataset = ds.dataset(bronze_path, format="parquet")
         table = dataset.to_table()
         df = table.to_pandas()
-        print(f"✅ {len(df)} registros carregados da Bronze")
+        print(f"{len(df)} registros carregados da Bronze")
     except Exception as e:
-        print(f"❌ [ERRO] Falha ao ler dados: {str(e)}")
+        print(f"[ERRO] Falha ao ler dados: {str(e)}")
         return
     
     # Pipeline de transformação
@@ -183,7 +183,7 @@ def processar_bronze_para_silver(dataset_name: str = "gastos-diretos") -> None:
     
     # Salvar na Silver
     silver_path.mkdir(parents=True, exist_ok=True)
-    print(f"\n💾 Gravando dados limpos na camada Silver...")
+    print(f"\n Gravando dados limpos na camada Silver...")
     print(f"   Destino: {silver_path}")
     
     try:
@@ -212,11 +212,8 @@ def processar_bronze_para_silver(dataset_name: str = "gastos-diretos") -> None:
                 existing_data_behavior="overwrite_or_ignore"
             )
         
-        print("\n✅ [SUCESSO] Dados salvos na camada Silver com sucesso!")
+        print("\n[SUCESSO] Dados salvos na camada Silver com sucesso!")
         print("="*60)
     except Exception as e:
-        print(f"\n❌ [ERRO] Falha ao salvar dados: {str(e)}")
+        print(f"\n [ERRO] Falha ao salvar dados: {str(e)}")
 
-
-#if __name__ == "__main__":
-#    processar_bronze_para_silver()

@@ -98,6 +98,3 @@ def processar_silver_para_gold(dataset_name: str = "gastos-diretos"):
     # Mostra análise exploratória Gold
     analise_gold(df)
 
-
-#if __name__ == "__main__":
-#    processar_silver_para_gold()
