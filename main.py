@@ -124,17 +124,20 @@ def download_paginas() -> int:
 def main():
     print(f"[INFO] Coletando de {DATA_URL}")
 
-    # faz download de todas as paginas
+    # extrai dados da base de dados do Brasil IO
     paginas = download_paginas()
     
     print(f"[INFO] Paginas lidas na execução: {paginas}")
 
+    # transforma dados da pasta raw (json) para a pasta bronze (parquet)
     total_arquivos = transformar_raw_para_bronze()
 
     print(f"[INFO] {total_arquivos} arquivos processados")
     
+    # transforma dados da pasta bronze para a pasta silver tratados
     processar_bronze_para_silver()
     
+    # sumariza e disponibiliza dados analizados para a pasta gold
     processar_gold()
     
 if __name__ == "__main__":

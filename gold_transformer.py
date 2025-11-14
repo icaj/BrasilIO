@@ -535,8 +535,8 @@ class GoldTransformer:
         # Gerar relatório executivo
         self.gerar_relatorio_executivo(df_clean, metricas)
         
-        logger.info("\n✅ PROCESSAMENTO CONCLUÍDO COM SUCESSO!")
-        logger.info(f"📂 Resultados disponíveis em: {self.gold_path}")
+        logger.info("\n PROCESSAMENTO CONCLUÍDO COM SUCESSO!")
+        logger.info(f" Resultados disponíveis em: {self.gold_path}")
 
 
 def processar_gold():
