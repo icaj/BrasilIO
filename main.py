@@ -10,8 +10,7 @@ from dotenv import load_dotenv
 from raw_loader import existe_pagina_raw, grava_json
 from bronze_transformer import transformar_raw_para_bronze
 from silver_transformer import processar_bronze_para_silver
-from gold_transformer import processar_silver_para_gold
-
+from gold_transformer import processar_gold
 # ------------------------------------------------------
 # Carrega variáveis de ambiente do arquivo .env
 # usado para ocultar o token do código
@@ -136,7 +135,7 @@ def main():
     
     processar_bronze_para_silver()
     
-    processar_silver_para_gold()
+    processar_gold()
     
 if __name__ == "__main__":
     main()

@@ -1,0 +1,19 @@
+{
+  "processamento_timestamp": "2025-11-13T23:58:42.497585",
+  "dataset": "gastos-diretos",
+  "registros_processados": 5737,
+  "periodo_dados": {
+    "ano_inicio": 2012,
+    "ano_fim": 2017,
+    "meses_disponiveis": 72,
+    "mes_mais_recente": "2017-12"
+  },
+  "qualidade_dados": {
+    "registros_originais": 5737,
+    "registros_limpos": 5017,
+    "registros_bloqueados": 720,
+    "registros_invalidos": 0,
+    "taxa_aproveitamento": "87.45%"
+  },
+  "arquivos_processados": 84
+}
