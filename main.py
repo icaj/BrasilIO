@@ -7,10 +7,16 @@ from urllib.parse import urlencode
 import requests
 from dotenv import load_dotenv
 
-from raw_loader import existe_pagina_raw, grava_json
-from bronze_transformer import transformar_raw_para_bronze
-from silver_transformer import processar_bronze_para_silver
-from gold_transformer import processar_gold
+#from raw_loader import existe_pagina_raw, grava_json
+#from bronze_transformer import transformar_raw_para_bronze
+#from silver_transformer import processar_bronze_para_silver
+#from gold_transformer import processar_gold
+
+from raw import Raw_Dataset as raw
+from bronze import Bronze_Dataset as bronze
+from silver import Silver_Dataset as silver
+from gold import GoldTransformer as gold
+
 # ------------------------------------------------------
 # Carrega variáveis de ambiente do arquivo .env
 # usado para ocultar o token do código
@@ -81,7 +87,7 @@ def busca_pagina(pagina: int) -> Dict[str, Any]:
             espera_delay(tentativas); tentativas += 1
 
 # faz o download de todas as páginas especificadas na variável 'total_paginas'
-def download_paginas() -> int:
+def download_paginas(raw: raw) -> int:
     # Varre todas as páginas até esvaziar.
     pagina = 1
     # lista com conteúdo de cada pagina
@@ -92,11 +98,11 @@ def download_paginas() -> int:
 
     while True:
         # verifica se a pagina ja foi baixada
-        if existe_pagina_raw(pagina):
+        if raw.existe_pagina_raw(pagina):
             print(f"Página {pagina} já existe na pasta RAW")
         else:
             # faz o download da página
-            dados = busca_pagina(pagina)
+            dados = raw.busca_pagina(pagina)
 
             # Estrutura típica do Brasil.IO (DRF): count/next/previous/results
             itens = dados.get("results")
@@ -105,7 +111,7 @@ def download_paginas() -> int:
                 itens = dados.get("data", dados if isinstance(dados, list) else [])
 
             print(f"[INFO] Salvando página {pagina} na pasta raw")
-            grava_json(pagina, dados)
+            raw.grava_json(pagina, dados)
 
             if not itens:
                 break
@@ -124,21 +130,33 @@ def download_paginas() -> int:
 def main():
     print(f"[INFO] Coletando de {DATA_URL}")
 
+    # pasta raw
+    rw = raw()
+    
     # extrai dados da base de dados do Brasil IO
-    paginas = download_paginas()
+    paginas = download_paginas(rw)
     
     print(f"[INFO] Paginas lidas na execução: {paginas}")
 
+    # pasta bronze
+    brz = bronze(raw=rw)
+    
     # transforma dados da pasta raw (json) para a pasta bronze (parquet)
-    total_arquivos = transformar_raw_para_bronze()
+    total_arquivos = brz.transformar_raw_para_bronze()
 
     print(f"[INFO] {total_arquivos} arquivos processados")
     
+    # pasta silver
+    sil = silver(brz=brz)
+    
     # transforma dados da pasta bronze para a pasta silver tratados
-    processar_bronze_para_silver()
+    sil.processar_bronze_para_silver()
+
+    # pasta gold    
+    gld = gold()
     
     # sumariza e disponibiliza dados analizados para a pasta gold
-    processar_gold()
-    
+    gld.processar()
+        
 if __name__ == "__main__":
     main()

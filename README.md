@@ -34,3 +34,10 @@ streamlit
 Este script em Phyton é um exercício de Engenharia de Dados que utiliza o site Brasil.io (https://brasil.io/) para explorar o dataset gastos-diretos, banco com informações sobre gastos do Governo Federal.
 O script importa a base e guarda na pasta dataset/raw no formato JSON. Essas informações são então processadas e convertidas para o formato parquet e gravadas na pasta dataset/bronze. 
 
+### Executando
+
+Para executar crie um arquivo com o nome .env na pasta raiz e adione:
+
+BRASIL_IO_API_TOKEN="chave"
+
+Onde "chave" será sua string da API gerada no site BrasilIO
