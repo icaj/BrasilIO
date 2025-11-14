@@ -1,14 +1,11 @@
 from pathlib import Path
 import pandas as pd
-import pyarrow.dataset as ds
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pyarrow.compute as pc
 from datetime import datetime
 import json
 import logging
-from typing import Dict, List, Tuple
-import numpy as np
+from typing import Dict
 
 # Configurações
 BASE_DIR = Path("./dataset")
