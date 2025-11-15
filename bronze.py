@@ -1,42 +1,49 @@
+import logging
 import os, json
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 import pandas as pd
+from raw import Raw_Dataset
 
-from raw import Raw_Dataset as rw
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class Bronze_Dataset:
 
-    DIR_BRONZE     = Path("./dataset/bronze")
+    dir_bronze     = ""
+    nome_dataset   = ""
     DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    raw            = Any
+    raw            = Raw_Dataset()
 
-    def __init__(Self, raw: rw, dir="./dataset/bronze"):
-        Self.DIR_BRONZE = Path(dir)
-        Self.raw = raw
+    def __init__(self, dir="./dataset/bronze", data_set='gastos-diretos'):
+        self.dir_bronze = Path(dir)
+        self.nome_dataset = data_set
         
-    def path(Self) -> Path:
-        return Self.DIR_BRONZE
+    def path(self) -> Path:
+        return self.dir_bronze
     
-    def grava_parquet_particionado(Self, df: pd.DataFrame, nome_dataset: str = "gastos-diretos") -> List[Path]:
+    def grava_parquet_particionado(self, df: pd.DataFrame) -> List[Path]:
         """
         Grava DataFrame em arquivos Parquet particionados por ano e mês
         
         Args:
             df: DataFrame com os dados
-            nome_dataset: Nome base do dataset
         
         Returns:
             Lista com os caminhos dos arquivos gerados
         """
         if df.empty:
-            print("[AVISO] DataFrame vazio, nada a gravar")
+            logging.info("[AVISO] DataFrame vazio, nada a gravar")
             return []
         
         # Verifica se as colunas de partição existem
         if 'ano' not in df.columns or 'mes' not in df.columns:
-            print("[ERRO] DataFrame não possui colunas 'ano' e 'mes' para particionamento")
+            logging.info("[ERRO] DataFrame não possui colunas 'ano' e 'mes' para particionamento")
             return []
         
         paths: List[Path] = []
@@ -53,11 +60,11 @@ class Bronze_Dataset:
             mes_fmt = f"{int(mes):02d}"
             
             # Cria o diretório da partição
-            partition_dir = Self.DIR_BRONZE / nome_dataset / f"ano={int(ano)}" / f"mes={mes_fmt}"
+            partition_dir = self.dir_bronze / self.nome_dataset / f"ano={int(ano)}" / f"mes={mes_fmt}"
             partition_dir.mkdir(parents=True, exist_ok=True)
             
             # Nome do arquivo
-            arquivo = partition_dir / f"{nome_dataset}_ano{int(ano)}_mes{mes_fmt}.parquet"
+            arquivo = partition_dir / f"{self.nome_dataset}_ano{int(ano)}_mes{mes_fmt}.parquet"
             
             # Remove as colunas de partição do DataFrame (opcional)
             # grupo_df = grupo_df.drop(columns=['ano', 'mes'], errors='ignore')
@@ -70,7 +77,7 @@ class Bronze_Dataset:
         
         return paths
 
-    def transforma_json_para_df(Self, dados: Dict[str, Any]) -> pd.DataFrame:
+    def transforma_json_para_df(self, dados: Dict[str, Any]) -> pd.DataFrame:
         """
         Transforma dados JSON em DataFrame
         
@@ -107,10 +114,10 @@ class Bronze_Dataset:
         if 'mes' in df.columns:
             df['mes'] = pd.to_numeric(df['mes'], errors='coerce').astype('Int64')
         
-        print(f"[INFO] DataFrame criado com {len(df)} registros")
+        logging.info(f"[INFO] DataFrame criado com {len(df)} registros")
         return df
 
-    def processar_json_para_parquet(Self, nome_arquivo: str, nome_dataset: str = "gastos-diretos") -> List[Path]:
+    def processar_json_para_parquet(self, nome_arquivo: str, nome_dataset: str = "gastos-diretos") -> List[Path]:
         """
         Função principal que processa um arquivo JSON e gera os Parquets particionados
         
@@ -121,30 +128,30 @@ class Bronze_Dataset:
         Returns:
             Lista com os caminhos dos arquivos gerados
         """
-        print(f"[INFO] Processando arquivo: {nome_arquivo}")
+        logging.info(f"[INFO] Processando arquivo: {nome_arquivo}")
         
         # 1. Lê o JSON da pasta raw
-        dados = Self.raw.le_json_raw(nome_arquivo)
-        print(f"[INFO] Total de registros no JSON: {dados.get('count', 'N/A')}")
+        dados = self.raw.le_json_raw(nome_arquivo)
+        logging.info(f"[INFO] Total de registros no JSON: {dados.get('count', 'N/A')}")
         
         # 2. Transforma em DataFrame
-        df = Self.transforma_json_para_df(dados)
+        df = self.transforma_json_para_df(dados)
         
         if df.empty:
-            print("[INFO] Nenhum dado para processar")
+            logging.info("[INFO] Nenhum dado para processar")
             return []
         
         # 3. Grava os Parquets particionados
-        arquivos = Self.grava_parquet_particionado(df, nome_dataset)
+        arquivos = self.grava_parquet_particionado(df, nome_dataset)
         
-        print(f"\n[SUCESSO] {len(arquivos)} arquivo(s) Parquet gerado(s)")
+        logging.info(f"\n[SUCESSO] {len(arquivos)} arquivo(s) Parquet gerado(s)")
         return arquivos
 
-    def transformar_raw_para_bronze(Self) -> int:
+    def transformar_raw_para_bronze(self) -> int:
         try:
-            arquivos = Self.raw.listdir()
+            arquivos = self.raw.listdir()
             for arquivo in arquivos:
-                arqs = Self.processar_json_para_parquet(arquivo)
+                arqs = self.processar_json_para_parquet(arquivo)
             return len(arqs)
         except Exception:
             return 0

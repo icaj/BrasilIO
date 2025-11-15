@@ -1,7 +1,7 @@
 {
-  "processamento_timestamp": "2025-11-14T14:41:56.389825",
+  "processamento_timestamp": "2025-11-15T15:39:22.548102",
   "dataset": "gastos-diretos",
-  "registros_processados": 5737,
+  "registros_processados": 5774,
   "periodo_dados": {
     "ano_inicio": 2012,
     "ano_fim": 2017,
@@ -9,11 +9,11 @@
     "mes_mais_recente": "2017-12"
   },
   "qualidade_dados": {
-    "registros_originais": 5737,
-    "registros_limpos": 5017,
+    "registros_originais": 5774,
+    "registros_limpos": 5054,
     "registros_bloqueados": 720,
     "registros_invalidos": 0,
-    "taxa_aproveitamento": "87.45%"
+    "taxa_aproveitamento": "87.53%"
   },
   "arquivos_processados": 84
 }

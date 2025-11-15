@@ -5,21 +5,21 @@ from typing import Dict, Any
 
 class Raw_Dataset:
     
-    DATASET_SLUG   = "gastos-diretos"
-    NOME_TABELA    = "gastos"
-    DIR_RAW        = "./dataset/raw"
+    dataset_slug   = ""
+    nome_tabela    = ""
+    dir_raw        = ""
     DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
  
     def __init__(Self, dir="./dataset/raw", slug="gastos-diretos", tabela="gastos"):
-        Self.DATASET_SLUG = slug
-        Self.NOME_TABELA = tabela
-        Self.DIR_RAW = Path(dir)
+        Self.dataset_slug = slug
+        Self.nome_tabela = tabela
+        Self.dir_raw = Path(dir)
     
     # verifica se página já existe na pasta RAW
     def existe_pagina_raw(Self, pagina: int) -> bool:
 
         try:
-            arquivos = os.listdir(Self.DIR_RAW)
+            arquivos = os.listdir(Self.dir_raw)
             for arquivo in arquivos:
                 if arquivo.endswith(f"_p{pagina:05d}.json"):
                     return True
@@ -29,8 +29,8 @@ class Raw_Dataset:
 
     # grava na pasta raw o json recebido
     def grava_json(Self, pagina: int, dados: Dict[str, Any]) -> Path:
-        arquivo = f"{Self.DATASET_SLUG}_{Self.NOME_TABELA}_p{pagina:05d}.json"
-        p = Self.DIR_RAW / arquivo
+        arquivo = f"{Self.dataset_slug}_{Self.nome_tabela}_p{pagina:05d}.json"
+        p = Self.dir_raw / arquivo
         p.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
         return p
 
@@ -45,7 +45,7 @@ class Raw_Dataset:
         Returns:
             Dict com os dados do JSON
         """
-        caminho = Self.DIR_RAW / nome_arquivo
+        caminho = Self.dir_raw / nome_arquivo
         
         if not caminho.exists():
             raise FileNotFoundError(f"Arquivo não encontrado: {caminho}")
@@ -57,7 +57,7 @@ class Raw_Dataset:
 
     def listdir(Self) -> list[str]:
         try:
-            arquivos = os.listdir(Self.DIR_RAW)
+            arquivos = os.listdir(Self.dir_raw)
             return arquivos
         except Exception:
             return None

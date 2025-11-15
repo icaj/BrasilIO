@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class GoldTransformer:
+class Gold_Dataset:
     """
     Classe responsável por transformar dados da camada Silver em agregações
     e análises da camada Gold, processando múltiplos arquivos particionados.
@@ -538,7 +538,7 @@ class GoldTransformer:
 
 def processar_gold():
     """Função principal para execução do script."""
-    transformer = GoldTransformer(dataset_name="gastos-diretos")
+    transformer = Gold_Dataset(dataset_name="gastos-diretos")
     transformer.processar()
 
 
