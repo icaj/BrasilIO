@@ -25,6 +25,28 @@ class Silver_Dataset:
         self.dir_silver = Path(dir)
         self.brz = brz
 
+    def listar_periodos_disponiveis(self, bronze_path: Path) -> list:
+        """Lista todos os anos e meses disponíveis na camada Bronze."""
+        periodos = []
+        
+        if not bronze_path.exists():
+            return periodos
+        
+        # Procura por estrutura ano=XXXX/mes=XX
+        for ano_dir in bronze_path.glob("ano=*"):
+            ano = ano_dir.name.split("=")[1]
+            for mes_dir in ano_dir.glob("mes=*"):
+                mes = mes_dir.name.split("=")[1]
+                # Verifica se há arquivos parquet
+                if list(mes_dir.glob("*.parquet")):
+                    periodos.append((ano, mes))
+        
+        # Se não encontrou estrutura particionada, verifica arquivos diretos
+        if not periodos and list(bronze_path.glob("*.parquet")):
+            periodos.append(("sem_particao", "sem_particao"))
+        
+        return sorted(periodos)
+
     def limpar_dados(self, df: pd.DataFrame) -> pd.DataFrame:
         """Realiza limpeza e padronização completa de TODAS as colunas."""
         logging.info("Iniciando limpeza dos dados...")
@@ -112,7 +134,7 @@ class Silver_Dataset:
             if nulos > 0:
                 logging.info(f"  {col}: {nulos} nulos ({percentual:.2f}%)")
             else:
-                logging.info(f" {col}: sem valores nulos")
+                logging.info(f"  {col}: sem valores nulos")
         
         # Colunas críticas (se existirem)
         colunas_criticas = ["ano", "mes", "valor", "data_pagamento"]
@@ -122,9 +144,9 @@ class Silver_Dataset:
             if col in df.columns:
                 nulos = df[col].isna().sum()
                 if nulos > 0:
-                    logging.warning(f" CRÍTICO: '{col}' possui {nulos} valores nulos")
+                    logging.warning(f"  CRÍTICO: '{col}' possui {nulos} valores nulos")
                 else:
-                    logging.info(f" '{col}' OK")
+                    logging.info(f"  '{col}' OK")
             else:
                 logging.warning(f"  Coluna crítica não encontrada: '{col}'")
         
@@ -170,23 +192,48 @@ class Silver_Dataset:
         silver_path = self.dir_silver / dataset_name
         
         logging.info("="*60)
-        logging.info("INICIANDO PIPELINE BRONZE → SILVER")
+        logging.info(f"INICIANDO PIPELINE BRONZE {self.brz.dir_bronze} → SILVER {self.dir_silver}")
         logging.info("="*60)
         
         if not bronze_path.exists():
-            logging.info(f"[ERRO] Pasta bronze não encontrada: {bronze_path}")
+            logging.error(f"[ERRO] Pasta bronze não encontrada: {bronze_path}")
             return
         
-        logging.info(f"Lendo dados da camada Bronze...")
+        # Lista todos os períodos disponíveis
+        periodos = self.listar_periodos_disponiveis(bronze_path)
+        
+        if not periodos:
+            logging.error(f"[ERRO] Nenhum arquivo parquet encontrado em: {bronze_path}")
+            return
+        
+        logging.info(f" Períodos encontrados na Bronze: {len(periodos)}")
+        for ano, mes in periodos:
+            if ano != "sem_particao":
+                logging.info(f"   • Ano {ano} / Mês {mes}")
+            else:
+                logging.info(f"   • Dados sem particionamento")
+        logging.info("-" * 60)
+        
+        logging.info(f"Lendo TODOS os dados da camada Bronze...")
         logging.info(f"   Origem: {bronze_path}")
         
         try:
-            dataset = ds.dataset(bronze_path, format="parquet")
+            # Lê TODO o dataset particionado de uma vez
+            dataset = ds.dataset(bronze_path, format="parquet", partitioning="hive")
             table = dataset.to_table()
             df = table.to_pandas()
-            logging.info(f"{len(df)} registros carregados da Bronze")
+            
+            logging.info(f" {len(df)} registros carregados da Bronze")
+            
+            # Verifica distribuição por período
+            if "ano" in df.columns and "mes" in df.columns:
+                logging.info(" Distribuição de registros por período:")
+                distribuicao = df.groupby(["ano", "mes"]).size().reset_index(name="registros")
+                for _, row in distribuicao.iterrows():
+                    logging.info(f"   • {row['ano']}/{row['mes']:02d}: {row['registros']} registros")
+            
         except Exception as e:
-            logging.info(f"[ERRO] Falha ao ler dados: {str(e)}")
+            logging.error(f"[ERRO] Falha ao ler dados: {str(e)}")
             return
         
         # Pipeline de transformação
@@ -225,8 +272,9 @@ class Silver_Dataset:
                     existing_data_behavior="overwrite_or_ignore"
                 )
             
-            logging.warning("Dados salvos na camada Silver com sucesso!")
+            logging.info(" Dados salvos na camada Silver com sucesso!")
+            logging.info(f" Total de registros processados: {len(df)}")
+            logging.info(f" Total de períodos processados: {len(periodos)}")
             logging.info("="*60)
         except Exception as e:
-            logging.error(f"Falha ao salvar dados: {str(e)}")
-
+            logging.error(f" Falha ao salvar dados: {str(e)}")
