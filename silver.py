@@ -191,9 +191,9 @@ class Silver_Dataset:
         bronze_path = self.brz.path() / dataset_name
         silver_path = self.dir_silver / dataset_name
         
-        logging.info("="*60)
+        logging.info("="*80)
         logging.info(f"INICIANDO PIPELINE BRONZE {self.brz.dir_bronze} → SILVER {self.dir_silver}")
-        logging.info("="*60)
+        logging.info("="*80)
         
         if not bronze_path.exists():
             logging.error(f"[ERRO] Pasta bronze não encontrada: {bronze_path}")
