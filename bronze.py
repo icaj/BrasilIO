@@ -26,7 +26,7 @@ class Bronze_Dataset:
     def path(self) -> Path:
         return self.dir_bronze
     
-    def grava_parquet_particionado(self, df: pd.DataFrame) -> List[Path]:
+    def grava_parquet_particionado(self, df: pd.DataFrame, nome_dataset: str) -> List[Path]:
         """
         Grava DataFrame em arquivos Parquet particionados por ano e mês
         
