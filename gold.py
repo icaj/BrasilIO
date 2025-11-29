@@ -536,9 +536,3 @@ class Gold_Dataset:
         logger.info(f" Resultados disponíveis em: {self.gold_path}")
 
 
-def processar_gold():
-    """Função principal para execução do script."""
-    transformer = Gold_Dataset(dataset_name="gastos-diretos")
-    transformer.processar()
-
-
