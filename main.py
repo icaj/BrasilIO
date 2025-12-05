@@ -6,6 +6,7 @@ from bronze import Bronze_Dataset
 from silver import Silver_Dataset
 from gold import Gold_Dataset
 from brasilio import BrasilIO
+from duckdb_integration import DuckDBIntegration
 
 # ---------------------------
 # Constantes de Configuração
@@ -81,7 +82,8 @@ def download_paginas() -> int:
 
 # inicio do programa
 def main():
-    print(f"[INFO] Coletando de {f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"}")
+    origem = f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"
+    print(f"[INFO] Coletando de {origem}")
 
     # extrai dados da base de dados do Brasil IO
     paginas = download_paginas()
@@ -104,9 +106,13 @@ def main():
 
     # pasta gold    
     gld = Gold_Dataset()
-    
+
     # sumariza e disponibiliza dados analizados para a pasta gold
     gld.processar()
+
+    # opcional: materializa camada Silver em um banco DuckDB local
+    duckdb_loader = DuckDBIntegration(dataset_name=DATASET_SLUG)
+    duckdb_loader.carregar_silver_para_duckdb()
         
 if __name__ == "__main__":
     main()
