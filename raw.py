@@ -16,6 +16,8 @@ class Raw_Dataset:
         Self.dir_raw = Path(dir)
     
     # verifica se página já existe na pasta RAW
+    # pagina: número da página a ser verificada
+    # retorna: True se a página existe, False caso contrário
     def existe_pagina_raw(Self, pagina: int) -> bool:
 
         try:
@@ -28,6 +30,8 @@ class Raw_Dataset:
             return False
 
     # grava na pasta raw o json recebido
+    # pagina: número da página a ser gravada
+    # dados: dict com os dados a serem gravados
     def grava_json(Self, pagina: int, dados: Dict[str, Any]) -> Path:
         arquivo = f"{Self.dataset_slug}_{Self.nome_tabela}_p{pagina:05d}.json"
         p = Self.dir_raw / arquivo
@@ -35,16 +39,10 @@ class Raw_Dataset:
         return p
 
     # le json da pasta raw
+    # nome_arquivo: nome do arquivo json a ler
+    # retorna: dict com os dados do json
     def le_json_raw(Self, nome_arquivo: str) -> Dict[str, Any]:
-        """
-        Lê um arquivo JSON da pasta raw
-        
-        Args:
-            nome_arquivo: Nome do arquivo JSON
-        
-        Returns:
-            Dict com os dados do JSON
-        """
+
         caminho = Self.dir_raw / nome_arquivo
         
         if not caminho.exists():
@@ -55,6 +53,8 @@ class Raw_Dataset:
         
         return dados
 
+    # lista arquivos na pasta raw
+    # retorna: lista de nomes de arquivos na pasta raw
     def listdir(Self) -> list[str]:
         try:
             arquivos = os.listdir(Self.dir_raw)
