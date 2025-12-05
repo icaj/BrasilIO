@@ -13,7 +13,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class Bronze_Dataset:
-
     dir_bronze     = ""
     nome_dataset   = ""
     DATA_HORA      = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -26,16 +25,12 @@ class Bronze_Dataset:
     def path(self) -> Path:
         return self.dir_bronze
     
+    # Grava DataFrame em arquivos Parquet particionados por ano e mês
+    # Args:
+    #  df: DataFrame com os dados
+    # Returno:
+    #  lista com os caminhos dos arquivos gerados
     def grava_parquet_particionado(self, df: pd.DataFrame, nome_dataset: str) -> List[Path]:
-        """
-        Grava DataFrame em arquivos Parquet particionados por ano e mês
-        
-        Args:
-            df: DataFrame com os dados
-        
-        Returns:
-            Lista com os caminhos dos arquivos gerados
-        """
         if df.empty:
             logging.info("[AVISO] DataFrame vazio, nada a gravar")
             return []
@@ -76,16 +71,12 @@ class Bronze_Dataset:
         
         return paths
 
+    # Transforma dados JSON em DataFrame
+    #    Args:
+    #      dados: Dicionário com os dados JSON
+    #    Returna:
+    #      DataFrame com os dados normalizados
     def transforma_json_para_df(self, dados: Dict[str, Any]) -> pd.DataFrame:
-        """
-        Transforma dados JSON em DataFrame
-        
-        Args:
-            dados: Dicionário com os dados JSON
-        
-        Returns:
-            DataFrame com os dados normalizados
-        """
         # Extrai os itens (results ou data)
         itens = dados.get("results")
         if itens is None:
@@ -116,17 +107,13 @@ class Bronze_Dataset:
         logging.info(f"[INFO] DataFrame criado com {len(df)} registros")
         return df
 
+    # Função principal que processa um arquivo JSON e gera os Parquets particionados
+    #   Args:
+    #     nome_arquivo: Nome do arquivo JSON na pasta raw
+    #     nome_dataset: Nome do dataset
+    #   Returna:
+    #     lista com os caminhos dos arquivos gerados
     def processar_json_para_parquet(self, nome_arquivo: str, nome_dataset: str = "gastos-diretos") -> List[Path]:
-        """
-        Função principal que processa um arquivo JSON e gera os Parquets particionados
-        
-        Args:
-            nome_arquivo: Nome do arquivo JSON na pasta raw
-            nome_dataset: Nome do dataset
-        
-        Returns:
-            Lista com os caminhos dos arquivos gerados
-        """
         logging.info(f"[INFO] Processando arquivo: {nome_arquivo}")
         
         # 1. Lê o JSON da pasta raw

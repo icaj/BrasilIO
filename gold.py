@@ -19,13 +19,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
+# Classe responsável por transformar dados da camada Silver em agregações
+# e análises da camada Gold, processando múltiplos arquivos particionados.
 class Gold_Dataset:
-    """
-    Classe responsável por transformar dados da camada Silver em agregações
-    e análises da camada Gold, processando múltiplos arquivos particionados.
-    """
-    
     def __init__(self, dataset_name: str = "gastos-diretos"):
         self.dataset_name = dataset_name
         self.silver_path = DIR_SILVER / dataset_name
@@ -37,11 +33,9 @@ class Gold_Dataset:
             "periodo_dados": {},
             "qualidade_dados": {}
         }
-    
+
+    # Valida e limpa os dados, tratando valores bloqueados e inconsistências.
     def validar_e_limpar_dados(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Valida e limpa os dados, tratando valores bloqueados e inconsistências.
-        """
         logger.info("Validando e limpando dados...")
         
         df_clean = df.copy()
@@ -84,8 +78,8 @@ class Gold_Dataset:
         
         return df_clean
     
+    # Calcula métricas de qualidade dos dados.
     def calcular_metricas_qualidade(self, df: pd.DataFrame) -> Dict:
-        """Calcula métricas de qualidade dos dados."""
         logger.info("Calculando métricas de qualidade...")
         
         metricas = {
@@ -115,8 +109,8 @@ class Gold_Dataset:
         
         return metricas
     
+    # Cria agregações básicas e fundamentais.
     def criar_agregacoes_basicas(self, df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-        """Cria agregações básicas e fundamentais."""
         logger.info("Criando agregações básicas...")
         agregacoes = {}
         
@@ -240,8 +234,8 @@ class Gold_Dataset:
         logger.info(f"{len(agregacoes)} agregações básicas criadas")
         return agregacoes
     
+    # Cria agregações avançadas e análises especiais.
     def criar_agregacoes_avancadas(self, df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-        """Cria agregações avançadas e análises especiais."""
         logger.info("Criando agregações avançadas...")
         agregacoes = {}
         
@@ -353,8 +347,8 @@ class Gold_Dataset:
         logger.info(f"{len(agregacoes)} agregações avançadas criadas")
         return agregacoes
     
+    # Salva todas as agregações em formato Parquet.
     def salvar_agregacoes(self, agregacoes: Dict[str, pd.DataFrame]):
-        """Salva todas as agregações em formato Parquet."""
         logger.info("Salvando agregações na camada Gold...")
         
         self.gold_path.mkdir(parents=True, exist_ok=True)
@@ -374,8 +368,8 @@ class Gold_Dataset:
         logger.info(f" {len(agregacoes)} agregações salvas em {self.gold_path}")
         logger.info(f" Metadados salvos em {metadata_path}")
     
+    # Gera um relatório executivo em texto
     def gerar_relatorio_executivo(self, df: pd.DataFrame, metricas: Dict):
-        """Gera um relatório executivo em texto."""
         logger.info("\n" + "="*80)
         logger.info("RELATÓRIO EXECUTIVO - CAMADA GOLD")
         logger.info("="*80)
@@ -419,8 +413,8 @@ class Gold_Dataset:
         
         logger.info("\n" + "="*80)
     
+    # Pipeline completo de processamento Silver → Gold.
     def processar(self):
-        """Pipeline completo de processamento Silver → Gold."""
         logger.info("="*80)
         logger.info(f"INICIANDO PROCESSAMENTO: {self.dataset_name}")
         logger.info("="*80)
