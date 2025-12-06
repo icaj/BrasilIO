@@ -6,7 +6,7 @@ from bronze import Bronze_Dataset
 from silver import Silver_Dataset
 from gold import Gold_Dataset
 from brasilio import BrasilIO
-from duckdb_integration import DuckDBManager
+from integracao_duckdb import DuckDBManager
 
 # ---------------------------
 # Constantes de Configuração
@@ -82,9 +82,8 @@ def download_paginas() -> int:
 
 # inicio do programa
 def main():
-    print(f"[INFO] Coletando de {API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/")
-
     # RAW - Download
+    print(f"[INFO] Coletando de {API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/")
     paginas = download_paginas()
     logging.info(f"[INFO] Paginas lidas na execução: {paginas}")
 

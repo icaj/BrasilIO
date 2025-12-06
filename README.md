@@ -29,7 +29,7 @@ python-dotenv
 
 duckdb
 
-streamlit
+apache-airflow
 
 ### Descrição
 
