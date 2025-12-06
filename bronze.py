@@ -99,10 +99,10 @@ class Bronze_Dataset:
         
         # Garante que ano e mes existem e são inteiros
         if 'ano' in df.columns:
-            df['ano'] = pd.to_numeric(df['ano'], errors='coerce').astype('Int64')
+            df['ano'] = pd.to_numeric(df['ano'], errors='coerce').astype('Int32')
         
         if 'mes' in df.columns:
-            df['mes'] = pd.to_numeric(df['mes'], errors='coerce').astype('Int64')
+            df['mes'] = pd.to_numeric(df['mes'], errors='coerce').astype('Int32')
         
         logging.info(f"[INFO] DataFrame criado com {len(df)} registros")
         return df
@@ -130,7 +130,7 @@ class Bronze_Dataset:
         # 3. Grava os Parquets particionados
         arquivos = self.grava_parquet_particionado(df, nome_dataset)
         
-        logging.info(f"\n[SUCESSO] {len(arquivos)} arquivo(s) Parquet gerado(s)")
+        logging.info(f"[SUCESSO] {len(arquivos)} arquivo(s) Parquet gerado(s)")
         return arquivos
 
     def transformar_raw_para_bronze(self) -> int:

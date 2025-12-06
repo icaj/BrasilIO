@@ -27,6 +27,8 @@ pyarrow.dataset
 
 python-dotenv
 
+duckdb
+
 streamlit
 
 ### Descrição

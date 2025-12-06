@@ -82,39 +82,13 @@ def download_paginas() -> int:
 
 # inicio do programa
 def main():
-#   print(f"[INFO] Coletando de {f"{API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/"}")
-
-    # extrai dados da base de dados do Brasil IO
-#   paginas = download_paginas()
-    
-#   logging.info(f"[INFO] Paginas lidas na execução: {paginas}")
-
-    # pasta bronze
-#   brz = Bronze_Dataset()
-    
-    # transforma dados da pasta raw (json) para a pasta bronze (parquet)
-#   total_arquivos = brz.transformar_raw_para_bronze()
-
-#   logging.info(f"[INFO] {total_arquivos} arquivos processados")
-    
-    # pasta silver
-#   sil = Silver_Dataset(brz=brz)
-    
-    # transforma dados da pasta bronze para a pasta silver tratados
-#   sil.processar_bronze_para_silver()
-
-    # pasta gold    
-#   gld = Gold_Dataset()
-    
-    # sumariza e disponibiliza dados analizados para a pasta gold
-#   gld.processar() 
-
     print(f"[INFO] Coletando de {API_BASE_URL}/dataset/{DATASET_SLUG}/{NOME_TABELA}/data/")
 
-    # RAW -> BRONZE
+    # RAW - Download
     paginas = download_paginas()
     logging.info(f"[INFO] Paginas lidas na execução: {paginas}")
 
+    # RAW -> BRONZE
     brz = Bronze_Dataset()
     total_arquivos = brz.transformar_raw_para_bronze()
     logging.info(f"[INFO] {total_arquivos} arquivos processados")
@@ -131,7 +105,7 @@ def main():
     duck = DuckDBManager()
     duck.register_bronze_view(DATASET_SLUG)
     duck.register_silver_view(DATASET_SLUG)
-    duck.create_basic_gold_tables(DATASET_SLUG)
+#    duck.create_basic_gold_tables(DATASET_SLUG)
     duck.close()
         
 if __name__ == "__main__":

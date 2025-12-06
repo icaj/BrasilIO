@@ -21,15 +21,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
+# Classe responsavel pelo processamento da Camada Gold:
+#  - Lê dados já limpos da Silver (Parquets particionados).
+#  - Faz validação adicional e limpeza mínima.
+#  - Cria agregações básicas e avançadas (séries temporais, Pareto, etc.).
+#  - Salva resultados em Parquet + metadados em JSON.
 class Gold_Dataset:
-    """
-    Camada Gold:
-    - Lê dados já limpos da Silver (Parquets particionados).
-    - Faz validação adicional e limpeza mínima.
-    - Cria agregações básicas e avançadas (séries temporais, Pareto, etc.).
-    - Salva resultados em Parquet + metadados em JSON.
-    """
 
     def __init__(self, dataset_name: str = "gastos-diretos") -> None:
         self.dataset_name = dataset_name
@@ -43,9 +40,7 @@ class Gold_Dataset:
             "qualidade_dados": {},
         }
 
-    # -------------------------------------------------------------------------
     # Validação / limpeza
-    # -------------------------------------------------------------------------
     def validar_e_limpar_dados(self, df: pd.DataFrame) -> pd.DataFrame:
         logger.info("Validando e limpando dados (Gold)...")
 
@@ -106,9 +101,7 @@ class Gold_Dataset:
 
         return df_clean
 
-    # -------------------------------------------------------------------------
     # Métricas de qualidade / período
-    # -------------------------------------------------------------------------
     def calcular_metricas_qualidade(self, df: pd.DataFrame) -> Dict:
         logger.info("Calculando métricas de qualidade...")
 
@@ -146,9 +139,7 @@ class Gold_Dataset:
         self.metadata["periodo_dados"] = metricas["periodo"]
         return metricas
 
-    # -------------------------------------------------------------------------
     # Agregações básicas
-    # -------------------------------------------------------------------------
     def criar_agregacoes_basicas(self, df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
         logger.info("Criando agregações básicas...")
         agregacoes: Dict[str, pd.DataFrame] = {}
@@ -347,9 +338,7 @@ class Gold_Dataset:
         logger.info("%d agregações básicas criadas", len(agregacoes))
         return agregacoes
 
-    # -------------------------------------------------------------------------
     # Agregações avançadas
-    # -------------------------------------------------------------------------
     def criar_agregacoes_avancadas(self, df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
         logger.info("Criando agregações avançadas...")
         agregacoes: Dict[str, pd.DataFrame] = {}
@@ -522,9 +511,7 @@ class Gold_Dataset:
         logger.info("%d agregações avançadas criadas", len(agregacoes))
         return agregacoes
 
-    # -------------------------------------------------------------------------
     # Persistência
-    # -------------------------------------------------------------------------
     def salvar_agregacoes(self, agregacoes: Dict[str, pd.DataFrame]) -> None:
         logger.info("Salvando agregações na camada Gold...")
         self.gold_path.mkdir(parents=True, exist_ok=True)
@@ -543,54 +530,52 @@ class Gold_Dataset:
         logger.info(" %d agregações salvas em %s", len(agregacoes), self.gold_path)
         logger.info(" Metadados salvos em %s", metadata_path)
 
-    # -------------------------------------------------------------------------
     # Relatório executivo (log)
-    # -------------------------------------------------------------------------
     def gerar_relatorio_executivo(self, df: pd.DataFrame, metricas: Dict) -> None:
-        logger.info("\n" + "=" * 80)
+        logger.info("=" * 80)
         logger.info("RELATÓRIO EXECUTIVO - CAMADA GOLD")
         logger.info("=" * 80)
 
-        logger.info("\n PERÍODO DOS DADOS:")
+        logger.info("PERÍODO DOS DADOS:")
         logger.info(
-            " • Intervalo: %s a %s",
+            " - Intervalo: %s a %s",
             metricas["periodo"]["ano_inicio"],
             metricas["periodo"]["ano_fim"],
         )
         logger.info(
-            " • Meses disponíveis: %s", metricas["periodo"]["meses_disponiveis"]
+            " - Meses disponíveis: %s", metricas["periodo"]["meses_disponiveis"]
         )
         logger.info(
-            " • Mês mais recente: %s", metricas["periodo"]["mes_mais_recente"]
+            " - Mês mais recente: %s", metricas["periodo"]["mes_mais_recente"]
         )
 
-        logger.info("\n VALORES TOTAIS:")
+        logger.info("VALORES TOTAIS:")
         valor_total = metricas["estatisticas_valor"]["total_gasto"]
-        logger.info(" • Total gasto: R$ %,.2f", valor_total)
+        logger.info(" - Total gasto: R$ %.2f", valor_total)
         logger.info(
-            " • Média por pagamento: R$ %,.2f",
+            " - Média por pagamento: R$ %.2f",
             metricas["estatisticas_valor"]["media"],
         )
         logger.info(
-            " • Mediana: R$ %,.2f", metricas["estatisticas_valor"]["mediana"]
+            " - Mediana: R$ %.2f", metricas["estatisticas_valor"]["mediana"]
         )
         logger.info(
-            " • Maior pagamento: R$ %,.2f", metricas["estatisticas_valor"]["maximo"]
+            " - Maior pagamento: R$ %.2f", metricas["estatisticas_valor"]["maximo"]
         )
 
-        logger.info("\n COBERTURA:")
-        logger.info(" • Órgãos: %d", metricas["cobertura"]["orgaos_unicos"])
-        logger.info(" • Favorecidos: %d", metricas["cobertura"]["favorecidos_unicos"])
-        logger.info(" • Programas: %d", metricas["cobertura"]["programas_unicos"])
-        logger.info(" • Subfunções: %d", metricas["cobertura"]["subfuncoes_unicas"])
+        logger.info("COBERTURA:")
+        logger.info(" - Órgãos: %d", metricas["cobertura"]["orgaos_unicos"])
+        logger.info(" - Favorecidos: %d", metricas["cobertura"]["favorecidos_unicos"])
+        logger.info(" - Programas: %d", metricas["cobertura"]["programas_unicos"])
+        logger.info(" - Subfunções: %d", metricas["cobertura"]["subfuncoes_unicas"])
 
-        logger.info("\n TOP 5 ÓRGÃOS POR GASTO TOTAL:")
+        logger.info("TOP 5 ÓRGÃOS POR GASTO TOTAL:")
         top_orgaos = df.groupby("nome_orgao")["valor"].sum().nlargest(5)
         for i, (orgao, valor) in enumerate(top_orgaos.items(), 1):
             percentual = (valor / valor_total * 100) if valor_total > 0 else 0
-            logger.info(" %d. %s: R$ %,.2f (%.2f%%)", i, orgao, valor, percentual)
+            logger.info(" %d. %s: R$ %.2f (%.2f%%)", i, orgao, valor, percentual)
 
-        logger.info("\n TOP 5 FAVORECIDOS POR GASTO TOTAL:")
+        logger.info("TOP 5 FAVORECIDOS POR GASTO TOTAL:")
         top_favorecidos = df.groupby("nome_favorecido")["valor"].sum().nlargest(5)
         for i, (favorecido, valor) in enumerate(top_favorecidos.items(), 1):
             percentual = (valor / valor_total * 100) if valor_total > 0 else 0
@@ -598,19 +583,19 @@ class Gold_Dataset:
                 favorecido[:50] + "..." if len(favorecido) > 50 else favorecido
             )
             logger.info(
-                " %d. %s: R$ %,.2f (%.2f%%)",
+                " %d. %s: R$ %.2f (%.2f%%)",
                 i,
                 nome_truncado,
                 valor,
                 percentual,
             )
 
-        logger.info("\n QUALIDADE DOS DADOS:")
+        logger.info("QUALIDADE DOS DADOS:")
         qd = self.metadata["qualidade_dados"]
-        logger.info(" • Registros processados: %s", f"{qd['registros_limpos']:,}")
-        logger.info(" • Registros bloqueados: %s", f"{qd['registros_bloqueados']:,}")
-        logger.info(" • Taxa de aproveitamento: %s", qd["taxa_aproveitamento"])
-        logger.info("\n" + "=" * 80)
+        logger.info(" - Registros processados: %s", f"{qd['registros_limpos']:,}")
+        logger.info(" - Registros bloqueados: %s", f"{qd['registros_bloqueados']:,}")
+        logger.info(" - Taxa de aproveitamento: %s", qd["taxa_aproveitamento"])
+        logger.info("=" * 80)
 
     # -------------------------------------------------------------------------
     # Pipeline Silver -> Gold
@@ -633,10 +618,10 @@ class Gold_Dataset:
             df = table.to_pandas()
 
             if df.empty:
-                logger.error(" Nenhum dado encontrado na Silver.")
+                logger.error("Nenhum dado encontrado na Silver.")
                 return
 
-            logger.info("✓ %d registros carregados da camada Silver", len(df))
+            logger.info("%d registros carregados da camada Silver", len(df))
             logger.info(
                 "Colunas disponíveis na Silver: %s",
                 ", ".join(sorted(df.columns)),
@@ -662,7 +647,7 @@ class Gold_Dataset:
             df = df[df["ano"].notna() & df["mes"].notna()].copy()
 
             logger.info(
-                "✓ Período: %d-%02d a %d-%02d",
+                "Período: %d-%02d a %d-%02d",
                 int(df["ano"].min()),
                 int(df["mes"].min()),
                 int(df["ano"].max()),
@@ -690,5 +675,5 @@ class Gold_Dataset:
         self.salvar_agregacoes(todas_agregacoes)
         self.gerar_relatorio_executivo(df_clean, metricas)
 
-        logger.info("\n PROCESSAMENTO GOLD CONCLUÍDO COM SUCESSO!")
-        logger.info(" Resultados disponíveis em: %s", self.gold_path)
+        logger.info("PROCESSAMENTO GOLD CONCLUÍDO COM SUCESSO!")
+        logger.info("Resultados disponíveis em: %s", self.gold_path)

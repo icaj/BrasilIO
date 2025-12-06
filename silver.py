@@ -48,7 +48,6 @@ SILVER_SCHEMA = pa.schema([
     pa.field("valor", pa.float64()),
 ])
 
-
 class Silver_Dataset:
     """
     Camada Silver:
@@ -289,7 +288,7 @@ class Silver_Dataset:
         logging.info(" Origem: %s", bronze_path)
 
         try:
-            dataset = ds.dataset(bronze_path, format="parquet", partitioning="hive", schema=SILVER_SCHEMA)
+            dataset = ds.dataset(bronze_path, format="parquet", partitioning="hive")
             table = dataset.to_table()
             df = table.to_pandas()
             logging.info(" %d registros carregados da Bronze", len(df))

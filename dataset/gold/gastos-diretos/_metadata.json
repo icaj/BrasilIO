@@ -1,19 +1,18 @@
 {
-  "processamento_timestamp": "2025-12-05T19:35:24.744130",
+  "processamento_timestamp": "2025-12-06T08:39:29.613159",
   "dataset": "gastos-diretos",
-  "registros_processados": 5774,
+  "registros_processados": 1000,
   "periodo_dados": {
-    "ano_inicio": 2012,
+    "ano_inicio": 2017,
     "ano_fim": 2017,
-    "meses_disponiveis": 72,
+    "meses_disponiveis": 1,
     "mes_mais_recente": "2017-12"
   },
   "qualidade_dados": {
-    "registros_originais": 5774,
-    "registros_limpos": 5054,
-    "registros_bloqueados": 720,
+    "registros_originais": 1000,
+    "registros_limpos": 1000,
+    "registros_bloqueados": 0,
     "registros_invalidos": 0,
-    "taxa_aproveitamento": "87.53%"
-  },
-  "arquivos_processados": 84
+    "taxa_aproveitamento": "100.00%"
+  }
 }
