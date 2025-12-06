@@ -3,7 +3,7 @@ import sys
 
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 
 BRASILIO_PATH="/home/ivo/Documentos/brasilio/BrasilIO-1/"
 if BRASILIO_PATH not in sys.path:

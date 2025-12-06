@@ -37,6 +37,7 @@ def download_paginas(total_paginas: int | None = 1000) -> int:
         # se já existir, pula (idempotência p/ Airflow)
         if raw.existe_pagina_raw(pagina):
             logger.info("Página %d já existe na pasta RAW, pulando...", pagina)
+            pagina += 1
         else:
             dados = api.busca_pagina(pagina)
             itens = dados.get("results")
@@ -50,11 +51,11 @@ def download_paginas(total_paginas: int | None = 1000) -> int:
             if not itens:
                 break
 
+            api.espera_delay(1)
+            pagina += 1
+
         if total_paginas is not None and pagina >= total_paginas:
             break
-
-        api.espera_delay(1)
-        pagina += 1
 
     logger.info("[RAW] Total de páginas processadas nesta execução: %d", pagina)
     return pagina

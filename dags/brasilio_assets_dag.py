@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.datasets import Dataset
 
 # 🔹 Ajuste este caminho para o path do projeto BrasilIO *dentro do worker*
@@ -31,7 +31,7 @@ GOLD_DATASET = Dataset(f"brasilio://gold/{DATASET_NAME}")
 DUCKDB_DATASET = Dataset(f"brasilio://duckdb/{DATASET_NAME}")
 
 default_args = {
-    "owner": "airflow",
+    "owner": "ivo",
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
 }
