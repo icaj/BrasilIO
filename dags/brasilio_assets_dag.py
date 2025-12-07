@@ -40,7 +40,7 @@ with DAG(
     schedule="@hourly",          # roda de hora em hora
     catchup=False,               # não faz backfill automático
     default_args=default_args,
-    tags=["brasilio", "gastos-diretos", "assets", "duckdb"],
+    tags=["cesar.school","brasilio", "gastos-diretos", "assets", "duckdb"],
 ) as dag:
 
     # 1) RAW – baixa páginas da API e grava em dataset/raw (JSON)

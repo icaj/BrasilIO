@@ -19,7 +19,7 @@ with DAG(
     start_date=datetime(2025, 1, 1),
     schedule="@hourly",  # ou @monthly, etc.
     catchup=False,
-    tags=["brasil-io", "engenharia-dados"],
+    tags=["cesar.school", "brasil-io", "engenharia-dados"],
 ) as dag:
 
     t_raw = PythonOperator(
