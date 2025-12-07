@@ -7,7 +7,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.dataset as ds
 
-from bronze import Bronze_Dataset as br
+from src.bronze import Bronze_Dataset as br
 
 # Configurar logging
 logging.basicConfig(

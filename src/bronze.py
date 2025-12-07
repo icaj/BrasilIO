@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 import pandas as pd
-from raw import Raw_Dataset
+from src.raw import Raw_Dataset
 
 # Configurar logging
 logging.basicConfig(

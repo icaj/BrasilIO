@@ -1,6 +1,13 @@
 import logging
-from bronze import Bronze_Dataset
-from silver import Silver_Dataset
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
+from src.bronze import Bronze_Dataset
+from src.silver import Silver_Dataset
 
 logging.basicConfig(
     level=logging.INFO,

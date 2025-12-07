@@ -1,16 +1,14 @@
 import logging
 import os
 from dotenv import load_dotenv
-from raw import Raw_Dataset
-from bronze import Bronze_Dataset
-from silver import Silver_Dataset
-from gold import Gold_Dataset
-from brasilio import BrasilIO
-from integracao_duckdb import DuckDBManager
+from src.raw import Raw_Dataset
+from src.bronze import Bronze_Dataset
+from src.silver import Silver_Dataset
+from src.gold import Gold_Dataset
+from src.brasilio import BrasilIO
+from src.integracao_duckdb import DuckDBManager
 
-# ---------------------------
 # Constantes de Configuração
-# ---------------------------
 API_BASE_URL   = "https://brasil.io/api"
 DATASET_SLUG   = "gastos-diretos"
 NOME_TABELA    = "gastos"
@@ -23,10 +21,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ------------------------------------------------------
 # Carrega variáveis de ambiente do arquivo .env
 # usado para ocultar o token do código
-# ------------------------------------------------------
 load_dotenv()
 API_TOKEN      = os.getenv("BRASIL_IO_API_TOKEN")
 if not API_TOKEN:

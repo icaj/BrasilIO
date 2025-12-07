@@ -1,25 +1,23 @@
 # dags/brasilio_etl_assets_dag.py
 from __future__ import annotations
 
-import os
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.datasets import Dataset
 
-# 🔹 Ajuste este caminho para o path do projeto BrasilIO *dentro do worker*
-BRASILIO_PATH = "/home/ivo/Documentos/brasilio/BrasilIO-1/"  # EXEMPLO: ajuste para o seu ambiente
-
-if BRASILIO_PATH not in sys.path:
-    sys.path.append(BRASILIO_PATH)
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 # Imports dos jobs já existentes no repo
-from jobs.download_raw import run as download_raw_run
-from jobs.raw_para_bronze import run as raw_para_bronze_run
-from jobs.bronze_para_silver import run as bronze_para_silver_run
-from jobs.silver_para_gold_duck import run as silver_para_gold_duck_run
+from jobs.airflow_download_raw import run as download_raw_run
+from jobs.airflow_raw_para_bronze import run as raw_para_bronze_run
+from jobs.airflow_bronze_para_silver import run as bronze_para_silver_run
+from jobs.airflow_silver_para_gold_duck import run as silver_para_gold_duck_run
 
 # 🔹 Definição dos Datasets (Assets) – vão aparecer no menu "Assets"
 DATASET_NAME = "gastos-diretos"
@@ -37,7 +35,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id="brasilio_etl_assets",
+    dag_id="0_brasilio_etl_assets",
     start_date=datetime(2025, 1, 1),
     schedule="@hourly",          # roda de hora em hora
     catchup=False,               # não faz backfill automático
