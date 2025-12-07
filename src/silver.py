@@ -48,14 +48,12 @@ SILVER_SCHEMA = pa.schema([
     pa.field("valor", pa.float64()),
 ])
 
+# Camada Silver:
+#  - Lê Parquets da Bronze (particionados por ano/mes)
+#  - Faz limpeza e padronizacao
+#  - Garante schema consistente (SILVER_SCHEMA)
+#  - Escreve Parquets na pasta dataset/silver/<dataset_name>, particionados por ano/mes
 class Silver_Dataset:
-    """
-    Camada Silver:
-    - Lê Parquets da Bronze (particionados por ano/mes).
-    - Faz limpeza e padronização.
-    - Garante schema consistente (SILVER_SCHEMA).
-    - Escreve Parquets na pasta dataset/silver/<dataset_name>, particionados por ano/mes.
-    """
 
     dir_silver: Path
     brz: Any
@@ -64,17 +62,13 @@ class Silver_Dataset:
         self.dir_silver = Path(dir)
         self.brz = brz
 
-    # -------------------------------------------------------------------------
     # Utilidades
-    # -------------------------------------------------------------------------
     def path(self) -> Path:
         return self.dir_silver
 
+    # Lista todos os anos e meses disponíveis na camada Bronze
+    # Estrutura esperada: bronze/<dataset>/ano=XXXX/mes=XX/*.parquet
     def listar_periodos_disponiveis(self, bronze_path: Path) -> list[tuple[str, str]]:
-        """
-        Lista todos os anos e meses disponíveis na camada Bronze.
-        Estrutura esperada: bronze/<dataset>/ano=XXXX/mes=XX/*.parquet
-        """
         periodos: List[tuple[str, str]] = []
 
         if not bronze_path.exists():
@@ -94,14 +88,10 @@ class Silver_Dataset:
 
         return sorted(periodos)
 
-    # -------------------------------------------------------------------------
     # Limpeza e qualidade
-    # -------------------------------------------------------------------------
+    # Realiza limpeza e padronização de TODAS as colunas.
+    # Deixa a base pronta para aplicar o SILVER_SCHEMA.
     def limpar_dados(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Realiza limpeza e padronização de TODAS as colunas.
-        Deixa a base pronta para aplicar o SILVER_SCHEMA.
-        """
         logging.info("Iniciando limpeza dos dados...")
         logging.info(f"Colunas encontradas: {list(df.columns)}")
 
@@ -181,8 +171,8 @@ class Silver_Dataset:
 
         return df
 
+    # Executa testes de qualidade em colunas relevantes
     def testes_qualidade(self, df: pd.DataFrame) -> None:
-        """Executa testes de qualidade em colunas relevantes."""
         logging.info("Executando testes de qualidade...")
 
         logging.info("Relatório de Valores Nulos por Coluna:")
@@ -212,8 +202,8 @@ class Silver_Dataset:
         logging.info(f"Total de colunas: {len(df.columns)}")
         logging.info("Testes de qualidade concluídos.")
 
+    # Estatísticas básicas 
     def analise_exploratoria(self, df: pd.DataFrame) -> None:
-        """Estatísticas básicas e alguns insights rápidos."""
         logging.info("=" * 60)
         logging.info("[ANÁLISE EXPLORATÓRIA]")
         logging.info("=" * 60)
@@ -242,17 +232,13 @@ class Silver_Dataset:
             gastos_mes.columns = ["Total", "Qtd Registros"]
             logging.info("\n%s", gastos_mes)
 
-    # -------------------------------------------------------------------------
     # Pipeline Bronze -> Silver
-    # -------------------------------------------------------------------------
+    # Pipeline completo:
+    # - Lê todos os Parquets da Bronze
+    # - Limpa / padroniza
+    # - Garante schema SILVER_SCHEMA
+    # - Grava Parquets particionados por ano/mes na Silver
     def processar_bronze_para_silver(self, dataset_name: str = "gastos-diretos") -> None:
-        """
-        Pipeline completo:
-        - Lê todos os Parquets da Bronze
-        - Limpa / padroniza
-        - Garante schema SILVER_SCHEMA
-        - Grava Parquets particionados por ano/mes na Silver
-        """
         bronze_path = self.brz.path() / dataset_name
         silver_path = self.dir_silver / dataset_name
 
