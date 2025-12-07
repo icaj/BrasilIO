@@ -47,7 +47,7 @@ with DAG(
     t_raw = PythonOperator(
         task_id="download_raw",
         python_callable=download_raw_run,
-        # 🔹 este task PRODUZ o asset RAW
+        #  este task PRODUZ o asset RAW
         outlets=[RAW_DATASET],
     )
 
@@ -55,7 +55,7 @@ with DAG(
     t_bronze = PythonOperator(
         task_id="raw_para_bronze",
         python_callable=raw_para_bronze_run,
-        # 🔹 consome RAW (conceitualmente) e produz BRONZE
+        #  consome RAW (conceitualmente) e produz BRONZE
         outlets=[BRONZE_DATASET],
     )
 
@@ -70,7 +70,7 @@ with DAG(
     t_gold_duck = PythonOperator(
         task_id="silver_para_gold_duck",
         python_callable=silver_para_gold_duck_run,
-        # 🔹 aqui você está:
+        #  aqui você está:
         #   - escrevendo Parquets em dataset/gold
         #   - atualizando o banco DuckDB (views/tabelas temporais)
         outlets=[GOLD_DATASET, DUCKDB_DATASET],

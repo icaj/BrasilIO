@@ -5,7 +5,7 @@ Trabalho do Curso de Ciência de Dados da Matéria Engenharia de Dados da CESAR 
 Aluno: <b>IVO CAETANO DE ANDRADE JUNIOR</b>
 Turma: Banco de dados - Noite
 
-Analise de Dados Brasil IO
+Análise de Dados da Brasil IO
 
 Ferramenta de extração de dados de gastos do Governo Federal da página Brasil IO ("https://brasil.io/api")
 
@@ -15,6 +15,12 @@ Extrai informações da base de dados 'gastos-diretos' armazenando em arquivos j
 
 Após download, transforma os arquivos json para parquet e os armazena na pasta dataset/bronze
 
+Em seguida faz limpeza e correção desses dados e armazena na pasta dataset/silver em parquet
+
+Depois avalida esses dados a fim de extrair informações úteis e armazena pasta dataset/gold
+
+Finalmente gera KPI importantes destas informações e os armazena em parquet otimizado e em base de daos duckdb
+
 ### Bibliotecas usadas:
 
 requests
@@ -22,8 +28,6 @@ requests
 pandas
 
 pyarrow
-
-pyarrow.dataset
 
 python-dotenv
 
@@ -34,12 +38,23 @@ apache-airflow
 ### Descrição
 
 Este script em Phyton é um exercício de Engenharia de Dados que utiliza o site Brasil.io (https://brasil.io/) para explorar o dataset gastos-diretos, banco com informações sobre gastos do Governo Federal.
-O script importa a base e guarda na pasta dataset/raw no formato JSON. Essas informações são então processadas e convertidas para o formato parquet e gravadas na pasta dataset/bronze. 
+O script faz todo o processo de ETL usando o modelo medalhao usando pastas raw, bronze, silver e gold.
 
 ### Executando
 
-Para executar crie um arquivo com o nome .env na pasta raiz e adione:
+Esta aplicação funciona apenas em Linux.
 
-BRASIL_IO_API_TOKEN="chave"
+Baixe os arquivos do repositório e vá até a pasta onde fez dawnload do repositório e execute:
 
-Onde "chave" será sua string da API gerada no site BrasilIO
+bash instala_dependencias.sh
+
+Isto instalará as dependencias necessárias do Python
+
+Caso não possua instalado o Apache Airflow em seu comptuaodr, execute o comando abaixo:
+
+bash instala_airflow.sh
+
+Em seguida, basta executar na pasta do projeto o comando abaixo para iniciar:
+
+bash start_airflow.sh
+

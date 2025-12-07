@@ -27,8 +27,7 @@ share/python-wheels/
 MANIFEST
 
 # Arquivos de configuracao do AirFlow
-airflow.cfg
-airflow.db
+airflow.*
 
 # PyInstaller
 # Usually these files are written by a python script from a template
