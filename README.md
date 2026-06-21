@@ -1,5 +1,12 @@
 # BrasilIO
 
+graph TD
+    Diretoria --> Gerente1[Gerente de Vendas]
+    Diretoria --> Gerente2[Gerente de TI]
+    Gerente1 --> Vendedor1[Vendedor A]
+    Gerente1 --> Vendedor2[Vendedor B]
+    Gerente2 --> Dev1[Desenvolvedor]
+    
 Trabalho do Curso de Ciência de Dados da Matéria Engenharia de Dados da CESAR SCHOOL
 
 Aluno: <b>IVO CAETANO DE ANDRADE JUNIOR</b>
